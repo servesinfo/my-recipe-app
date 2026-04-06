@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتشف الوصفات العالمي</title>
+    <style>
+        :root { --primary: #ff6b6b; --dark: #2d3436; --light: #f9f9f9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light); margin: 0; padding: 20px; color: var(--dark); }
+        .container { max-width: 800px; margin: auto; text-align: center; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
+        input { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        button { padding: 10px 25px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .meals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .meal-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: 0.3s; }
+        .meal-card:hover { transform: translateY(-5px); }
+        .meal-card img { width: 100%; height: 200px; object-fit: cover; }
+        .meal-info { padding: 15px; }
+        .meal-info h3 { margin: 0 0 10px; font-size: 18px; }
+
+        @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.meal-card {
+    animation: fadeIn 0.5s ease-in-out;
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🍕 مكتشف الوصفات العالمي</h1>
+    <p>ابحث عن أكلتك المفضلة باللغة الإنجليزية (مثلاً: Chicken, Pizza, Pasta)</p>
+    
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="اكتب اسم الوجبة هنا...">
+        <button onclick="searchMeal()">بحث</button>
+    </div>
+
+    <div id="mealsGrid" class="meals-grid">
+        <!-- النتائج ستظهر هنا -->
+    </div>
+</div>
+<hr style="margin: 40px 0; border: 0; border-top: 2px dashed #ddd;">
+<h2 style="text-align: center;">⭐ وجباتي المفضلة</h2>
+<div id="favoritesGrid" class="meals-grid">
+    <!-- الوجبات المفضلة ستظهر هنا -->
+</div>
+
+<script>
+    // 1. قاعدة البيانات المحلية
+const myMeals = [
+    { id: 1, name: "بيزا إيطالية", category: "معجنات", img: "https://kitchen.sayidaty.net/uploads/small/35/35efd4e04a66621ba20c7f19f5bf0d55_w750_h500.jpg" },
+    { id: 2, name: "دجاج مشوي", category: "لحوم", img: "https://www.themealdb.com/images/media/meals/sywswr1511383814.jpg" },
+    { id: 3, name: "باستا بالكريمة", category: "إيطالي", img: "https://www.themealdb.com/images/media/meals/ustsqw1468250014.jpg" },
+    { id: 4, name: "برجر كلاسيك", category: "وجبات سريعة", img: "https://kroustyfood.com/wp-content/uploads/2024/04/Classic-Burger.png" }
+];
+
+// 2. تحميل المفضلة من ذاكرة المتصفح
+let favorites = JSON.parse(localStorage.getItem('MY_FAVORITES')) || [];
+
+function searchMeal() {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const mealsGrid = document.getElementById('mealsGrid');
+    mealsGrid.innerHTML = "";
+
+    const filteredMeals = myMeals.filter(meal => 
+        meal.name.includes(searchInput) || meal.category.toLowerCase().includes(searchInput)
+    );
+
+    filteredMeals.forEach(meal => {
+        const isFav = favorites.some(f => f.id === meal.id);
+        const mealCard = `
+            <div class="meal-card">
+                <img src="${meal.img}" alt="${meal.name}">
+                <div class="meal-info">
+                    <h3>${meal.name}</h3>
+                    <button onclick="toggleFavorite(${meal.id})" style="background:${isFav ? '#ff4757' : '#2ed573'}; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">
+                        ${isFav ? '❌ إزالة من المفضلة' : '❤️ إضافة للمفضلة'}
+                    </button>
+                </div>
+            </div>
+        `;
+        mealsGrid.innerHTML += mealCard;
+    });
+}
+
+// 3. دالة إضافة/إزالة من المفضلة
+function toggleFavorite(id) {
+    const meal = myMeals.find(m => m.id === id);
+    const index = favorites.findIndex(f => f.id === id);
+
+    if (index > -1) {
+        favorites.splice(index, 1); // إزالة إذا كانت موجودة
+    } else {
+        favorites.push(meal); // إضافة إذا لم تكن موجودة
+    }
+
+    localStorage.setItem('MY_FAVORITES', JSON.stringify(favorites));
+    searchMeal(); // تحديث القائمة الرئيسية
+    displayFavorites(); // تحديث قائمة المفضلة
+}
+
+// 4. دالة عرض المفضلة
+function displayFavorites() {
+    const favGrid = document.getElementById('favoritesGrid');
+    favGrid.innerHTML = "";
+
+    if (favorites.length === 0) {
+        favGrid.innerHTML = "<p style='grid-column: 1/-1; color:#bbb;'>لا توجد وجبات في المفضلة بعد.</p>";
+        return;
+    }
+
+    favorites.forEach(meal => {
+        const mealCard = `
+            <div class="meal-card" style="border: 1px solid #ff6b6b;">
+                <img src="${meal.img}" alt="${meal.name}">
+                <div class="meal-info">
+                    <h3>${meal.name}</h3>
+                    <button onclick="toggleFavorite(${meal.id})" style="background:#ff4757; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">❌ إزالة</button>
+                </div>
+            </div>
+        `;
+        favGrid.innerHTML += mealCard;
+    });
+}
+
+// تشغيل الدوال عند تحميل الصفحة
+window.onload = function() {
+    searchMeal();
+    displayFavorites();
+};
+</script>
+
+</body>
+</html>
