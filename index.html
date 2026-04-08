@@ -38,6 +38,9 @@
         <input type="text" id="searchInput" placeholder="اكتب اسم الوجبة هنا...">
         <button onclick="searchMeal()">بحث</button>
     </div>
+    <button onclick="getRandomMeal()" style="background-color: #ff9f43; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+    🎲 اقترح لي وجبة!
+</button>
 
     <div id="mealsGrid" class="meals-grid">
         <!-- النتائج ستظهر هنا -->
@@ -132,6 +135,33 @@ window.onload = function() {
     searchMeal();
     displayFavorites();
 };
+    function getRandomMeal() {
+    const mealsGrid = document.getElementById('mealsGrid');
+    
+    // إفراغ الشبكة وبدء تأثير بسيط
+    mealsGrid.innerHTML = "<p style='text-align:center;'>جاري اختيار وجبة لذيذة...</p>";
+
+    setTimeout(() => {
+        // اختيار وجبة عشوائية من مصفوفة myMeals
+        const randomIndex = Math.floor(Math.random() * myMeals.length);
+        const randomMeal = myMeals[randomIndex];
+
+        // عرض الوجبة المختارة فقط
+        mealsGrid.innerHTML = `
+            <div class="meal-card" style="border: 3px solid #ff9f43; transform: scale(1.05);">
+                <div style="background: #ff9f43; color: white; padding: 5px; text-align: center; font-weight: bold;">
+                    مقترح اليوم ✨
+                </div>
+                <img src="${randomMeal.img}" alt="${randomMeal.name}">
+                <div class="meal-info">
+                    <h3>${randomMeal.name}</h3>
+                    <p>التصنيف: ${randomMeal.category}</p>
+                    <button onclick="searchMeal()" style="background: #eee; border: none; padding: 5px; cursor: pointer;">عرض كل الوجبات</button>
+                </div>
+            </div>
+        `;
+    }, 500); // تأخير بسيط لمحاكاة التفكير العشوائي
+}
 </script>
 
 </body>
